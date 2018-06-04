@@ -51,20 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setNewBlock();
         //move preview block to stage
         moveBlockToStage();
-
-        new Thread(){
-            public void run(){
-                while(true) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    stage.down();
-                    screen.invalidate();
-                }
-            }
-        }.start();
+       //동작시작
+       runThread();
     }
 
     public void setNewBlock(){
@@ -77,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Block block = preview.getBlock();
         stage.setBlock(block);
         setNewBlock();
-        screen.invalidate();
+        screen.postInvalidate();
     }
 
     @Override
@@ -98,4 +86,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         screen.invalidate();
     }
+
+    boolean runFlag = true;
+    public void runThread(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(runFlag) {
+                    try {
+                        Thread.sleep(1000);
+                        stage.down();
+                        screen.postInvalidate();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        runFlag = false;
+    }
 }
+

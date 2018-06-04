@@ -160,17 +160,20 @@ public class Stage {
                 //stage 범위체크
                 int target_x = x+block.x+nextX;
                 int target_y = y+block.y+nextY;
-                if(target_x > 0 && target_x < stage_map[0].length
+
+                if(target_x >= 0 && target_x < stage_map[0].length
                         && target_y>=0 && target_y<stage_map.length) {
                     //셀의 값이 둘다 0보다 큰 경우 충돌
-                    if (stage_map[target_y][target_x] > 0 && block.currentBlock()[y][x] > 0)
+                    if (stage_map[target_y][target_x] > 0 && block.currentBlock()[y][x] > 0 )
                         return false;
                 }
             }
         }
         return true;
     }
-
+    public void breakWall(){
+        
+    }
     public interface Control{
         public void moveBlockToStage();
     }
