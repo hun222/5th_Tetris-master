@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Stage {
     float unit;
@@ -12,6 +13,7 @@ public class Stage {
     Paint red, green, blue, cyan, magenta, yellow, purple;
     Block block;
     Control control;
+    Point point;
 
     int stage_map[][] = {
             {9,0,0,0,0,0,0,0,0,0,0,9},
@@ -35,11 +37,12 @@ public class Stage {
             {9,0,0,0,0,0,0,0,0,0,0,9},
             {9,9,9,9,9,9,9,9,9,9,9,9},
     };
-    public Stage(float unit, int top, int left, Control control){
+    public Stage(float unit, int top, int left, Control control, Point point){
         this.unit = unit;
         this.top = top;
         this.left = left;
         this.control = control;
+        this.point = point;
 
         grid = new Paint();
         grid.setColor(Color.parseColor("#FFEEEEEE"));
@@ -139,6 +142,7 @@ public class Stage {
             block.down();
         else {
             pushBlockToStage();
+            breakCheck();
             control.moveBlockToStage();
         }
     }
@@ -154,12 +158,23 @@ public class Stage {
 
     public boolean collisionCheck(int nextX, int nextY,int nextR){
         //스테이지에서 블럭이 다음에 이동할 곳의 값들을 꺼내서 담아둔다.
-        int next[][] = new int[4][4];
+        //int next[][] = new int[4][4];
         for(int y=0; y<4; y++){
             for(int x=0; x<4; x++){
                 //stage 범위체크
                 int target_x = x+block.x+nextX;
                 int target_y = y+block.y+nextY;
+
+                //블럭 로테이션 제어
+                if(nextR==1) {
+                    int ori_rotation = block.rotation;
+                    block.rotate();
+                   if(block.currentBlock()[y][x]>0 && stage_map[target_y][target_x] > 0){
+                       block.rotation = ori_rotation;
+                       return false;
+                   }
+                   block.rotation = ori_rotation;
+                }
 
                 if(target_x >= 0 && target_x < stage_map[0].length
                         && target_y>=0 && target_y<stage_map.length) {
@@ -171,8 +186,34 @@ public class Stage {
         }
         return true;
     }
-    public void breakWall(){
-        
+    public void breakCheck(){
+        int count = 0;
+        int max = stage_map[0].length;
+        for(int y=0; y<stage_map.length-1; y++) {
+            count = 0;
+            for (int x = 0; x < stage_map[0].length; x++) {
+                if (stage_map[y][x] != 0)
+                    count++;
+            }
+            if(max==count) {
+                Log.i("stack: ", "아래가 가득 찼습니다.");
+                //한칸씩 아래로 내리기
+                clearBlock(y);
+                point.point++;
+                point.map[1][1] = String.valueOf(point.point);
+            }
+        }
+    }
+    public void clearBlock(int target_y){
+        //for(int y=stage_map.length-2; y>0; y--){
+        for(int y=target_y; y>0; y--){
+            for(int x=0; x<stage_map[0].length; x++){
+                //위에걸 아래로
+                stage_map[y][x] = stage_map[y-1][x];
+            }
+        }
+        for(int x=1;x<stage_map[0].length-1;x++)
+            stage_map[0][x] = 0;
     }
     public interface Control{
         public void moveBlockToStage();

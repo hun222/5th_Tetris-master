@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // 그리드의 크기 단위
     float unit;
     Button rotate, right, down, left;
+    Point point;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,10 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rotate.setOnClickListener(this);
 
         //스테이지와 프리뷰를 생성해서 스크린 클래스에 담아준다.
-        stage = new Stage(unit, 0, 0, this);
         preview = new Preview(unit, 0, 13);
-        screen = new Screen(this, stage, preview);
+        point = new Point(unit,6,13);
+        stage = new Stage(unit, 0, 0, this, point);
+        screen = new Screen(this, stage, preview, point);
         layout.addView(screen);
+
 
         //block setting
         setNewBlock();
@@ -53,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         moveBlockToStage();
        //동작시작
        runThread();
+
+
     }
 
     public void setNewBlock(){
@@ -90,13 +95,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean runFlag = true;
     public void runThread(){
         new Thread(new Runnable() {
+            int time = 0;
             @Override
             public void run() {
                 while(runFlag) {
                     try {
                         Thread.sleep(1000);
+                        time++;
                         stage.down();
                         screen.postInvalidate();
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(time==30){
+                                    runFlag = false;
+                                    Toast.makeText(getBaseContext(), "Game Over!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
                     } catch (Exception e) {
                     }
                 }
